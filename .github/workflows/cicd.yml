@@ -52,13 +52,20 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    - name: Generate short SHA
+      id: get_short_sha
+      run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-7)" >> $GITHUB_ENV
+      shell: bash
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
         file: ./DockerFile
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/flasktest-app:$(date +%s)
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/flasktest-app:latest
+          ${{ secrets.DOCKER_USERNAME }}/flasktest-app:${{ env.SHORT_SHA }}
 
     - name: Image digest
       run: echo ${{ steps.build-and-publish.outputs.digest }}
